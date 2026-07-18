@@ -1,0 +1,2071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Astral Codex — Anime Astral Simulator Wiki</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600;700&family=Cinzel:wght@600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --void: #0a0b1a;
+    --panel: #12142b;
+    --panel-raised: #191c3a;
+    --line: #2a2d54;
+    --astral: #8b5cf6;
+    --astral-bright: #c084fc;
+    --gold: #f5b942;
+    --star: #edebfa;
+    --slate: #8b87a8;
+    --danger: #f2617a;
+    --ok: #4ade80;
+
+    /* category accents */
+    --cat-codes: #2dd4bf;
+    --cat-store: #f5b942;
+    --cat-mechanics: #fb923c;
+    --cat-gear: #38bdf8;
+    --cat-progression: #c084fc;
+    --cat-contribute: #4ade80;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--void);
+    color: var(--star);
+    font-family: 'Inter', sans-serif;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* ---------- Starfield backdrop ---------- */
+  .starfield {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 10% 20%, rgba(237,235,250,0.5), transparent),
+      radial-gradient(1px 1px at 80% 10%, rgba(237,235,250,0.4), transparent),
+      radial-gradient(2px 2px at 60% 70%, rgba(139,92,246,0.5), transparent),
+      radial-gradient(1px 1px at 30% 85%, rgba(237,235,250,0.3), transparent),
+      radial-gradient(1px 1px at 90% 60%, rgba(237,235,250,0.4), transparent),
+      radial-gradient(1.5px 1.5px at 45% 40%, rgba(192,132,252,0.4), transparent),
+      radial-gradient(1px 1px at 15% 55%, rgba(237,235,250,0.3), transparent);
+    background-size: 100% 100%;
+    opacity: 0.8;
+  }
+
+  .astral-glow {
+    position: fixed;
+    top: -20%;
+    right: -10%;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  /* ---------- Layout ---------- */
+  .shell {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* ---------- Sidebar ---------- */
+  .sidebar {
+    background: rgba(18, 20, 43, 0.7);
+    border-right: 1px solid var(--line);
+    padding: 28px 20px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+    backdrop-filter: blur(12px);
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+    text-decoration: none;
+  }
+
+  .brand-gate {
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .brand-name {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--star);
+    letter-spacing: 0.3px;
+  }
+
+  .brand-sub {
+    font-size: 11px;
+    color: var(--slate);
+    margin-bottom: 28px;
+    padding-left: 40px;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .nav-group {
+    margin-bottom: 22px;
+  }
+
+  .nav-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.2px;
+    color: var(--slate);
+    margin-bottom: 10px;
+    font-weight: 600;
+  }
+
+  .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    color: var(--star);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 2px;
+    transition: background 0.15s, color 0.15s;
+    border-left: 2px solid transparent;
+  }
+
+  .nav-link:hover {
+    background: rgba(139, 92, 246, 0.12);
+    color: var(--astral-bright);
+  }
+
+  .nav-link.active {
+    background: color-mix(in srgb, var(--group-accent, var(--astral)) 16%, transparent);
+    color: var(--group-accent, var(--astral-bright));
+    border-left: 2px solid var(--group-accent, var(--astral-bright));
+  }
+
+  .nav-group[data-cat="codes"]       { --group-accent: var(--cat-codes); }
+  .nav-group[data-cat="store"]       { --group-accent: var(--cat-store); }
+  .nav-group[data-cat="mechanics"]   { --group-accent: var(--cat-mechanics); }
+  .nav-group[data-cat="gear"]        { --group-accent: var(--cat-gear); }
+  .nav-group[data-cat="progression"] { --group-accent: var(--cat-progression); }
+  .nav-group[data-cat="contribute"]  { --group-accent: var(--cat-contribute); }
+
+  .nav-group .nav-label { position: relative; padding-left: 10px; }
+  .nav-group[data-cat] .nav-label::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--group-accent, var(--slate));
+    box-shadow: 0 0 5px var(--group-accent, transparent);
+  }
+
+  .nav-group[data-cat] .nav-link:hover {
+    background: color-mix(in srgb, var(--group-accent, var(--astral)) 12%, transparent);
+    color: var(--group-accent, var(--astral-bright));
+  }
+  .nav-group[data-cat] .nav-link:hover .nav-icon,
+  .nav-group[data-cat] .nav-link.active .nav-icon {
+    color: var(--group-accent, var(--astral-bright));
+  }
+
+  .nav-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    opacity: 0.75;
+    color: var(--slate);
+    transition: color 0.15s, opacity 0.15s;
+  }
+
+  .nav-link:hover .nav-icon,
+  .nav-link.active .nav-icon {
+    color: var(--astral-bright);
+    opacity: 1;
+  }
+
+  /* ---------- Main content ---------- */
+  main {
+    padding: 48px 56px 120px;
+    max-width: 980px;
+  }
+
+  .page-header {
+    margin-bottom: 40px;
+  }
+
+  .eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+
+  .eyebrow-icon {
+    width: 13px;
+    height: 13px;
+    flex-shrink: 0;
+    color: var(--gold);
+  }
+
+  h1 {
+    font-family: 'Cinzel', serif;
+    font-size: 40px;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    color: var(--star);
+    background: linear-gradient(135deg, var(--star) 30%, var(--astral-bright) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 12px;
+  }
+
+  @supports not (background-clip: text) {
+    h1 { color: var(--star); background: none; -webkit-text-fill-color: initial; }
+  }
+
+  .page-lede {
+    color: var(--slate);
+    font-size: 16px;
+    max-width: 640px;
+  }
+
+  section.page {
+    display: none;
+  }
+  section.page.active {
+    display: block;
+    animation: fadein 0.35s ease;
+  }
+
+  @keyframes fadein {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    margin: 40px 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  h2:first-of-type { margin-top: 0; }
+
+  h2 .gate-mark {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  p.note {
+    color: var(--slate);
+    font-size: 14px;
+    margin-bottom: 18px;
+  }
+
+  .callout {
+    background: rgba(245, 185, 66, 0.08);
+    border: 1px solid rgba(245, 185, 66, 0.25);
+    border-radius: 10px;
+    padding: 14px 18px;
+    font-size: 13.5px;
+    color: #e8d5a3;
+    margin-bottom: 24px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .callout b { color: var(--gold); }
+
+  /* ---------- Tier list ---------- */
+  .tier-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 16px;
+    margin-bottom: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+
+  .tier-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    color: #0a0b1a;
+  }
+
+  .tier-S .tier-badge { background: linear-gradient(160deg, #f5b942, #f27d3d); }
+  .tier-A .tier-badge { background: linear-gradient(160deg, #c084fc, #8b5cf6); }
+  .tier-B .tier-badge { background: linear-gradient(160deg, #7dd3fc, #38bdf8); }
+  .tier-C .tier-badge { background: linear-gradient(160deg, #94a3b8, #64748b); }
+
+  .tier-items {
+    background: var(--panel);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 18px;
+  }
+
+  .chip {
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--star);
+  }
+
+  .chip .chip-note {
+    color: var(--slate);
+    font-size: 11.5px;
+    margin-left: 6px;
+  }
+
+  /* ---------- Data table ---------- */
+  .data-table-wrap {
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 28px;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+
+  thead {
+    background: var(--panel-raised);
+  }
+
+  th {
+    text-align: left;
+    padding: 12px 16px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--astral-bright);
+  }
+
+  td {
+    padding: 12px 16px;
+    border-top: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--star);
+  }
+
+  tr:hover td { background: var(--panel-raised); }
+
+  /* ---------- Rarity system ---------- */
+  .rarity-cell {
+    position: relative;
+    font-weight: 600;
+  }
+
+  .rarity-cell[data-rarity="Common"]     { color: #9ca3af; }
+
+  .rarity-cell[data-rarity="Uncommon"]   { color: #4ade80; }
+
+  .rarity-cell[data-rarity="Rare"]       { color: #38bdf8; }
+
+  .rarity-cell[data-rarity="Epic"]       { color: #c084fc; }
+
+  .rarity-cell[data-rarity="Legendary"]  { color: #f5b942; }
+
+  .rarity-cell[data-rarity="Mythical"]   { color: #f472b6; }
+
+  .rarity-cell[data-rarity="Crafted"]    { color: #fb923c; }
+
+  .rarity-cell[data-rarity="Secret"]     { color: #f2617a; }
+
+  .rarity-cell[data-rarity="Divine"] {
+    color: #edebfa;
+    background-image: linear-gradient(90deg, #edebfa, #c084fc, #f5b942, #edebfa);
+    background-size: 300% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    animation: divine-shimmer 4s linear infinite;
+  }
+
+  @supports not (background-clip: text) {
+    .rarity-cell[data-rarity="Divine"] {
+      background-image: none;
+      -webkit-text-fill-color: initial;
+      animation: none;
+    }
+  }
+
+  @keyframes divine-shimmer {
+    to { background-position: -300% 0; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rarity-cell[data-rarity="Divine"] { animation: none; }
+  }
+
+  tr:has(.rarity-cell[data-rarity="Common"])    { box-shadow: inset 3px 0 0 #9ca3af; }
+  tr:has(.rarity-cell[data-rarity="Uncommon"])  { box-shadow: inset 3px 0 0 #4ade80; }
+  tr:has(.rarity-cell[data-rarity="Rare"])      { box-shadow: inset 3px 0 0 #38bdf8; }
+  tr:has(.rarity-cell[data-rarity="Epic"])      { box-shadow: inset 3px 0 0 #c084fc; }
+  tr:has(.rarity-cell[data-rarity="Legendary"]) { box-shadow: inset 3px 0 0 #f5b942; }
+  tr:has(.rarity-cell[data-rarity="Mythical"])  { box-shadow: inset 3px 0 0 #f472b6; }
+  tr:has(.rarity-cell[data-rarity="Crafted"])   { box-shadow: inset 3px 0 0 #fb923c; }
+  tr:has(.rarity-cell[data-rarity="Secret"])    { box-shadow: inset 3px 0 0 #f2617a; }
+
+  td.mono, .mono {
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .slot-tag {
+    display: inline-block;
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    background: rgba(139,92,246,0.15);
+    color: var(--astral-bright);
+    font-weight: 600;
+  }
+
+  .stat-pos { color: var(--ok); }
+
+  /* ---------- Cards grid (quests, mounts) ---------- */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+  }
+
+  .card {
+    position: relative;
+    background: linear-gradient(160deg, var(--panel-raised) 0%, var(--panel) 60%);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 20px;
+    overflow: hidden;
+    box-shadow: 0 1px 0 rgba(255,255,255,0.03) inset, 0 8px 20px -12px rgba(0,0,0,0.6);
+    transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: -40%;
+    right: -30%;
+    width: 140px;
+    height: 140px;
+    background: radial-gradient(circle, rgba(139,92,246,0.16), transparent 70%);
+    pointer-events: none;
+    transition: opacity 0.25s;
+  }
+
+  .card:hover {
+    border-color: var(--astral);
+    transform: translateY(-3px);
+    box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 16px 32px -14px rgba(139,92,246,0.35);
+  }
+
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 700;
+    font-size: 19px;
+    margin-bottom: 6px;
+    color: var(--star);
+    position: relative;
+  }
+
+  .card-world {
+    font-size: 11px;
+    color: var(--gold);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    font-weight: 600;
+    margin-bottom: 10px;
+  }
+
+  .card-body {
+    font-size: 13.5px;
+    color: var(--slate);
+    margin-bottom: 12px;
+  }
+
+  .card-footer {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--line);
+    color: var(--slate);
+  }
+
+  .card-footer b { color: var(--star); }
+
+  /* ---------- Editable badge ---------- */
+  .todo {
+    display: inline-block;
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--danger);
+    background: rgba(242, 97, 122, 0.12);
+    border: 1px solid rgba(242, 97, 122, 0.3);
+    padding: 2px 7px;
+    border-radius: 6px;
+    margin-left: 6px;
+  }
+
+  /* ---------- Steps (titles obtainment) ---------- */
+  .steps {
+    counter-reset: step;
+    margin-bottom: 28px;
+  }
+
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 14px;
+    margin-bottom: 4px;
+    position: relative;
+  }
+
+  .step:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 17px;
+    top: 36px;
+    bottom: -4px;
+    width: 1px;
+    background: var(--line);
+  }
+
+  .step-num {
+    counter-increment: step;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--panel-raised);
+    border: 1px solid var(--astral);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--astral-bright);
+    flex-shrink: 0;
+  }
+
+  .step-num::before { content: counter(step); }
+
+  .step-body {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+  }
+
+  .step-title {
+    font-weight: 600;
+    font-size: 14.5px;
+    margin-bottom: 4px;
+  }
+
+  .step-desc {
+    font-size: 13.5px;
+    color: var(--slate);
+  }
+
+  /* ---------- Category color accents ---------- */
+  section.page[data-cat="codes"]        { --accent: var(--cat-codes); }
+  section.page[data-cat="store"]        { --accent: var(--cat-store); }
+  section.page[data-cat="mechanics"]    { --accent: var(--cat-mechanics); }
+  section.page[data-cat="gear"]         { --accent: var(--cat-gear); }
+  section.page[data-cat="progression"]  { --accent: var(--cat-progression); }
+  section.page[data-cat="contribute"]   { --accent: var(--cat-contribute); }
+
+  section.page .eyebrow { color: var(--accent, var(--gold)); }
+  section.page .eyebrow-icon { color: var(--accent, var(--gold)); }
+  section.page .gate-mark polygon { stroke: var(--accent, #c084fc); }
+  section.page h2 { color: var(--accent, var(--star)); }
+  section.page h1 {
+    background: linear-gradient(135deg, var(--star) 30%, var(--accent, var(--astral-bright)) 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  section.page .step-num { border-color: var(--accent, var(--astral)); color: var(--accent, var(--astral-bright)); }
+  section.page thead th { color: var(--accent, var(--astral-bright)); }
+  section.page .card:hover {
+    border-color: var(--accent, var(--astral));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 16px 32px -14px color-mix(in srgb, var(--accent, var(--astral)) 45%, transparent);
+  }
+  section.page .card::before {
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent, var(--astral)) 22%, transparent), transparent 70%);
+  }
+
+  /* Homepage cards get their own per-item accent via inline --accent */
+  #page-home .card { border-top: 2px solid color-mix(in srgb, var(--accent, var(--astral)) 55%, var(--line)); }
+  #page-home .card:hover {
+    border-color: var(--accent, var(--astral));
+    box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 16px 32px -14px color-mix(in srgb, var(--accent, var(--astral)) 45%, transparent);
+  }
+  #page-home .card::before {
+    background: radial-gradient(circle, color-mix(in srgb, var(--accent, var(--astral)) 24%, transparent), transparent 70%);
+  }
+  #page-home .card-title { color: color-mix(in srgb, var(--accent, var(--astral-bright)) 70%, var(--star)); }
+
+  /* ---------- Footer ---------- */
+  .page-footer {
+    margin-top: 60px;
+    padding-top: 20px;
+    border-top: 1px solid var(--line);
+    font-size: 12px;
+    color: var(--slate);
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ---------- Search ---------- */
+  .search-wrap {
+    position: relative;
+    margin-bottom: 6px;
+  }
+
+  .search-box {
+    width: 100%;
+    background: var(--panel-raised);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 34px 9px 12px;
+    color: var(--star);
+    font-size: 13px;
+    font-family: 'Inter', sans-serif;
+  }
+  .search-box:focus {
+    outline: none;
+    border-color: var(--astral);
+  }
+  .search-box::placeholder { color: var(--slate); }
+
+  .search-clear {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 22px;
+    height: 22px;
+    border: none;
+    background: transparent;
+    color: var(--slate);
+    font-size: 12px;
+    cursor: pointer;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+  }
+  .search-clear:hover {
+    background: rgba(139, 92, 246, 0.15);
+    color: var(--astral-bright);
+  }
+  .search-clear.visible { display: flex; }
+
+  .search-empty {
+    display: none;
+    font-size: 12.5px;
+    color: var(--slate);
+    padding: 6px 4px 16px;
+  }
+  .search-empty.visible { display: block; }
+
+  /* ---------- Mobile ---------- */
+  .menu-toggle {
+    display: none;
+  }
+
+  @media (max-width: 860px) {
+    .shell { grid-template-columns: 1fr; }
+    .sidebar {
+      position: fixed;
+      left: 0; top: 0;
+      width: 260px;
+      transform: translateX(-100%);
+      transition: transform 0.25s ease;
+      z-index: 50;
+      box-shadow: 20px 0 40px rgba(0,0,0,0.4);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .menu-toggle {
+      display: flex;
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 60;
+      width: 42px;
+      height: 42px;
+      background: var(--panel-raised);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      align-items: center;
+      justify-content: center;
+      color: var(--star);
+      font-size: 18px;
+      cursor: pointer;
+    }
+    main { padding: 90px 20px 100px; }
+    h1 { font-size: 30px; }
+    .tier-row { grid-template-columns: 60px 1fr; }
+    .tier-badge { font-size: 18px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="starfield"></div>
+<div class="astral-glow"></div>
+
+<div class="menu-toggle" id="menuToggle">☰</div>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-home" viewBox="0 0 24 24"><path d="M12 3 21 10.5V21H15V14H9V21H3V10.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-codes" viewBox="0 0 24 24"><path d="M8 8 3 12l5 4M16 8l5 4-5 4M14 5l-4 14" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-gamepass-tier" viewBox="0 0 24 24"><path d="M3 20V13M9 20V7M15 20V11M21 20V4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-gamepass-stats" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M3 9H21M8 4V9" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-mechanics" viewBox="0 0 24 24"><path d="M4 17 10 8l3 5 3-4 4 8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-accessories" viewBox="0 0 24 24"><path d="M12 3 14.5 9.5 21 12 14.5 14.5 12 21 9.5 14.5 3 12 9.5 9.5Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></symbol>
+    <symbol id="i-mounts" viewBox="0 0 24 24"><path d="M4 18c1-6 4-10 9-10 3.5 0 6 2 7 5l1 1-3 1-1 3H9l-1-3-2-1c-1 0-2 1-2 4Z" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="16" cy="9" r="1" fill="currentColor"/></symbol>
+    <symbol id="i-swords" viewBox="0 0 24 24"><path d="M6 21 18 9M6 21l-1.5-4L9 15M18 9l3-3-2-2-3 3M15 6l3 3" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-avatars" viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M5 20c1-4 4-6 7-6s6 2 7 6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-pets" viewBox="0 0 24 24"><circle cx="7" cy="7" r="1.6" fill="currentColor"/><circle cx="17" cy="7" r="1.6" fill="currentColor"/><circle cx="4.5" cy="12.5" r="1.6" fill="currentColor"/><circle cx="19.5" cy="12.5" r="1.6" fill="currentColor"/><path d="M12 12c3.5 0 6 2.3 6 5.2 0 2-1.8 2.8-6 2.8s-6-.8-6-2.8C6 14.3 8.5 12 12 12Z" fill="none" stroke="currentColor" stroke-width="1.6"/></symbol>
+    <symbol id="i-pet-passives" viewBox="0 0 24 24"><path d="M12 3v18M12 3 6 8M12 3l6 5M4 13l8 8 8-8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+    <symbol id="i-shadows" viewBox="0 0 24 24"><path d="M20 13.5A8 8 0 1 1 10.5 4 6.5 6.5 0 0 0 20 13.5Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+    <symbol id="i-zanpakuto" viewBox="0 0 24 24"><path d="M12 2v13M8 9h8M9 15h6l-1 3h-4Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M10 18 8 22M14 18l2 4" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-titles" viewBox="0 0 24 24"><path d="M6 3h12v6a6 6 0 0 1-12 0Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M12 15v3M9 21h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-sidequests" viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6Z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M9 11h6M9 15h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></symbol>
+    <symbol id="i-hex" viewBox="0 0 24 24"><polygon points="12,2 21,7.5 21,16.5 12,22 3,16.5 3,7.5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></symbol>
+  </defs>
+</svg>
+
+<div class="shell">
+  <nav class="sidebar" id="sidebar">
+    <a href="#" class="brand" onclick="showPage('home')">
+      <svg class="brand-gate" viewBox="0 0 40 40"><polygon points="20,2 35,11 35,29 20,38 5,29 5,11" fill="none" stroke="#c084fc" stroke-width="2"/><polygon points="20,10 28,14.5 28,25.5 20,30 12,25.5 12,14.5" fill="#8b5cf6" opacity="0.5"/></svg>
+      <span class="brand-name">Astral Codex</span>
+    </a>
+    <div class="brand-sub">Anime Astral Simulator</div>
+
+    <div class="search-wrap">
+      <input class="search-box" id="navSearch" placeholder="Search the wiki..." oninput="filterNav()">
+      <button class="search-clear" id="searchClear" onclick="clearNavSearch()" aria-label="Clear search">✕</button>
+    </div>
+    <div class="search-empty" id="searchEmpty">No pages match "<span id="searchEmptyTerm"></span>"</div>
+
+    <div class="nav-group">
+      <div class="nav-label">Overview</div>
+      <a class="nav-link active" data-page="home" onclick="showPage('home')"><svg class="nav-icon"><use href="#i-home"/></svg>Home</a>
+    </div>
+
+    <div class="nav-group" data-cat="codes">
+      <div class="nav-label">Codes</div>
+      <a class="nav-link" data-page="codes" onclick="showPage('codes')"><svg class="nav-icon"><use href="#i-codes"/></svg>Codes</a>
+    </div>
+
+    <div class="nav-group" data-cat="store">
+      <div class="nav-label">Store</div>
+      <a class="nav-link" data-page="gamepass-tier" onclick="showPage('gamepass-tier')"><svg class="nav-icon"><use href="#i-gamepass-tier"/></svg>Gamepass Tier List</a>
+      <a class="nav-link" data-page="gamepass-stats" onclick="showPage('gamepass-stats')"><svg class="nav-icon"><use href="#i-gamepass-stats"/></svg>Gamepass Stats</a>
+    </div>
+
+    <div class="nav-group" data-cat="mechanics">
+      <div class="nav-label">Mechanics</div>
+      <a class="nav-link" data-page="mechanics" onclick="showPage('mechanics')"><svg class="nav-icon"><use href="#i-mechanics"/></svg>DPS Calculator</a>
+    </div>
+
+    <div class="nav-group" data-cat="gear">
+      <div class="nav-label">Gear</div>
+      <a class="nav-link" data-page="accessories" onclick="showPage('accessories')"><svg class="nav-icon"><use href="#i-accessories"/></svg>Accessories</a>
+      <a class="nav-link" data-page="mounts" onclick="showPage('mounts')"><svg class="nav-icon"><use href="#i-mounts"/></svg>Mounts</a>
+      <a class="nav-link" data-page="swords" onclick="showPage('swords')"><svg class="nav-icon"><use href="#i-swords"/></svg>Swords</a>
+    </div>
+
+    <div class="nav-group" data-cat="progression">
+      <div class="nav-label">Progression</div>
+      <a class="nav-link" data-page="avatars" onclick="showPage('avatars')"><svg class="nav-icon"><use href="#i-avatars"/></svg>Avatars</a>
+      <a class="nav-link" data-page="pets" onclick="showPage('pets')"><svg class="nav-icon"><use href="#i-pets"/></svg>Pets</a>
+      <a class="nav-link" data-page="pet-passives" onclick="showPage('pet-passives')"><svg class="nav-icon"><use href="#i-pet-passives"/></svg>Pet Passives &amp; Accessories</a>
+      <a class="nav-link" data-page="shadows" onclick="showPage('shadows')"><svg class="nav-icon"><use href="#i-shadows"/></svg>Shadows</a>
+      <a class="nav-link" data-page="zanpakuto" onclick="showPage('zanpakuto')"><svg class="nav-icon"><use href="#i-zanpakuto"/></svg>Zanpakuto</a>
+      <a class="nav-link" data-page="titles" onclick="showPage('titles')"><svg class="nav-icon"><use href="#i-titles"/></svg>Titles</a>
+      <a class="nav-link" data-page="sidequests" onclick="showPage('sidequests')"><svg class="nav-icon"><use href="#i-sidequests"/></svg>Side Quests</a>
+    </div>
+  </nav>
+
+  <main>
+
+    <!-- HOME -->
+    <section class="page active" id="page-home">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Unofficial Fan Wiki</div>
+        <h1>Astral Codex</h1>
+        <p class="page-lede">A community reference for <b>Anime Astral Simulator</b> on Roblox — gamepasses, accessories, mounts, titles, and side quests, all in one place. Built to be edited as the game updates.</p>
+      </div>
+
+      <h2><svg class="gate-mark" viewBox="0 0 40 40"><polygon points="20,2 35,11 35,29 20,38 5,29 5,11" fill="none" stroke="#c084fc" stroke-width="3"/></svg>What's in here</h2>
+      <div class="card-grid">
+        <div class="card" onclick="showPage('codes')" style="cursor:pointer; --accent: var(--cat-codes);">
+          <div class="card-title">Codes</div>
+          <div class="card-body">Every active code, tap to copy — redeem straight in-game.</div>
+        </div>
+        <div class="card" onclick="showPage('gamepass-tier')" style="cursor:pointer; --accent: var(--cat-store);">
+          <div class="card-title">Gamepass Tier List</div>
+          <div class="card-body">Which passes are worth Robux or F2P Tickets first, ranked S–C by long-term value.</div>
+        </div>
+        <div class="card" onclick="showPage('gamepass-stats')" style="cursor:pointer; --accent: var(--cat-store);">
+          <div class="card-title">Gamepass Stats</div>
+          <div class="card-body">Full effect breakdown and both purchase paths (Robux / F2P Tickets) for every pass.</div>
+        </div>
+        <div class="card" onclick="showPage('mechanics')" style="cursor:pointer; --accent: var(--cat-mechanics);">
+          <div class="card-title">DPS Calculator</div>
+          <div class="card-body">Plug in Power and Damage Multi to get your exact hits-per-second, Fast Click included.</div>
+        </div>
+        <div class="card" onclick="showPage('accessories')" style="cursor:pointer; --accent: var(--cat-gear);">
+          <div class="card-title">Accessories</div>
+          <div class="card-body">Head, Torso, Back, and Shoulder gear — stat bonuses and exactly where each drops.</div>
+        </div>
+        <div class="card" onclick="showPage('mounts')" style="cursor:pointer; --accent: var(--cat-gear);">
+          <div class="card-title">Mounts</div>
+          <div class="card-body">Exact stat buffs and Walk Speed values for all 6 mounts, from the Rats to the Wolf.</div>
+        </div>
+        <div class="card" onclick="showPage('swords')" style="cursor:pointer; --accent: var(--cat-gear);">
+          <div class="card-title">Swords</div>
+          <div class="card-body">Multipliers across all 4 star tiers, plus what it costs to fuse each sword upward.</div>
+        </div>
+        <div class="card" onclick="showPage('avatars')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Avatars</div>
+          <div class="card-body">Avatar multiplier by world, from Ninja Village through the Raid Boss drops.</div>
+        </div>
+        <div class="card" onclick="showPage('pets')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Pets</div>
+          <div class="card-body">Every pet's multiplier by world, plus Scaling and Limited pets listed separately.</div>
+        </div>
+        <div class="card" onclick="showPage('pet-passives')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Pet Passives &amp; Accessories</div>
+          <div class="card-body">Equippable pet gear and the passive tiers pets can roll, from Pack Instinct to Divine Predator.</div>
+        </div>
+        <div class="card" onclick="showPage('shadows')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Shadows</div>
+          <div class="card-body">Gate spawn times and every skin's stat bonus by rank, from Iron to Beru.</div>
+        </div>
+        <div class="card" onclick="showPage('zanpakuto')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Zanpakuto</div>
+          <div class="card-body">Where each crafting part drops, and the kill count needed for every level.</div>
+        </div>
+        <div class="card" onclick="showPage('titles')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Titles</div>
+          <div class="card-body">All 10 World Boss title drops, their bonuses, and the 10k pity system.</div>
+        </div>
+        <div class="card" onclick="showPage('sidequests')" style="cursor:pointer; --accent: var(--cat-progression);">
+          <div class="card-title">Side Quests</div>
+          <div class="card-body">All 10 world quests — kill targets and exact rewards, from Ninja Quest through Hueco Mundo Quest.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CODES -->
+    <section class="page" id="page-codes" data-cat="codes">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Codes</div>
+        <h1>Codes</h1>
+        <p class="page-lede">Tap any code to copy it to your clipboard, then redeem it in-game.</p>
+      </div>
+
+      <div id="codesGrid" style="display:flex;flex-wrap:wrap;gap:12px;">
+      </div>
+
+      <div id="copyToast" style="position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--panel-raised);border:1px solid var(--astral);color:var(--star);padding:10px 20px;border-radius:10px;font-size:14px;font-weight:600;opacity:0;pointer-events:none;transition:opacity 0.2s, transform 0.2s;z-index:100;">
+        Copied!
+      </div>
+
+      <script>
+        (function() {
+          const codes = [
+            "RELEASE","EXCHANGE","UPDATE1","NPCNERF","UPDATE1.5","UPDATE2",
+            "BATTLEPASS","REWARDSFIXED","UPDATE2.5","MOUNTS","GRIMOIRES","UPDATE3",
+            "WAIFU","TRACKER","TRIALMEDIUM","UPDATE3.5","UPDATE4","SUMMERMOUNT",
+            "UPDATE4.5","DIVINEPASSIVES","MINIUPDATE4.75","UPDATE5","UPDATE5.5",
+            "SKILLTREE","PETPASSIVES","DUNGEONS","UPDATE6RELEASE","BACKTOASTRAL",
+            "LIKES3KNEW","2MVISITSNEW","20KACTIVE","30KACTIVE","7.5KFAVORITES",
+            "!ASTRAL40KCCU!","UPDATE6FIXES","UPDATE6EXTRAFIXES","FIXEDAVATAR"
+          ];
+
+          const grid = document.getElementById('codesGrid');
+          const toast = document.getElementById('copyToast');
+          let toastTimer = null;
+
+          codes.forEach(code => {
+            const chip = document.createElement('button');
+            chip.textContent = code;
+            chip.style.cssText = "background:var(--panel-raised);border:1px solid var(--line);border-radius:10px;padding:10px 16px;color:var(--star);font-family:'JetBrains Mono',monospace;font-size:13px;cursor:pointer;transition:border-color 0.15s, background 0.15s;";
+            chip.addEventListener('mouseenter', () => { chip.style.borderColor = 'var(--astral-bright)'; });
+            chip.addEventListener('mouseleave', () => { chip.style.borderColor = 'var(--line)'; });
+            chip.addEventListener('click', () => {
+              const copyText = async () => {
+                try {
+                  await navigator.clipboard.writeText(code);
+                } catch (e) {
+                  const ta = document.createElement('textarea');
+                  ta.value = code;
+                  ta.style.position = 'fixed';
+                  ta.style.opacity = '0';
+                  document.body.appendChild(ta);
+                  ta.select();
+                  document.execCommand('copy');
+                  document.body.removeChild(ta);
+                }
+              };
+              copyText();
+              toast.textContent = 'Copied "' + code + '"';
+              toast.style.opacity = '1';
+              toast.style.transform = 'translateX(-50%) translateY(0)';
+              clearTimeout(toastTimer);
+              toastTimer = setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(-50%) translateY(20px)';
+              }, 1400);
+            });
+            grid.appendChild(chip);
+          });
+        })();
+      </script>
+    </section>
+
+    <!-- MECHANICS -->
+    <section class="page" id="page-mechanics" data-cat="mechanics">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Mechanics</div>
+        <h1>DPS Calculator</h1>
+      </div>
+
+      <div class="data-table-wrap" style="padding:24px;">
+        <div style="display:flex;flex-direction:column;gap:16px;max-width:420px;">
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--slate);">
+            Current Power
+            <div style="display:flex;gap:8px;">
+              <input id="dpsPower" type="number" placeholder="e.g. 1500" style="flex:1;background:var(--panel-raised);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--star);font-family:'JetBrains Mono',monospace;font-size:14px;">
+              <select id="dpsPowerSuffix" style="background:var(--panel-raised);border:1px solid var(--line);border-radius:8px;padding:10px 8px;color:var(--star);font-family:'JetBrains Mono',monospace;font-size:14px;"></select>
+            </div>
+          </label>
+          <label style="display:flex;flex-direction:column;gap:6px;font-size:13px;color:var(--slate);">
+            Damage Multi
+            <div style="display:flex;gap:8px;">
+              <input id="dpsMulti" type="number" placeholder="e.g. 12.5" style="flex:1;background:var(--panel-raised);border:1px solid var(--line);border-radius:8px;padding:10px 12px;color:var(--star);font-family:'JetBrains Mono',monospace;font-size:14px;">
+              <select id="dpsMultiSuffix" style="background:var(--panel-raised);border:1px solid var(--line);border-radius:8px;padding:10px 8px;color:var(--star);font-family:'JetBrains Mono',monospace;font-size:14px;"></select>
+            </div>
+          </label>
+          <label style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--star);cursor:pointer;">
+            <input id="dpsFastClick" type="checkbox" style="width:16px;height:16px;accent-color:var(--astral);">
+            Fast Click
+          </label>
+          <div style="border-top:1px solid var(--line);padding-top:16px;font-size:14px;color:var(--slate);">
+            DPS = <span id="dpsFormulaLabel">2.66</span> × Power × Damage Multi
+          </div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:24px;font-weight:700;color:var(--astral-bright);word-break:break-word;">
+            <span id="dpsResult">0</span>
+          </div>
+        </div>
+      </div>
+      <script>
+        (function() {
+          const powerEl = document.getElementById('dpsPower');
+          const multiEl = document.getElementById('dpsMulti');
+          const powerSuffixEl = document.getElementById('dpsPowerSuffix');
+          const multiSuffixEl = document.getElementById('dpsMultiSuffix');
+          const fastClickEl = document.getElementById('dpsFastClick');
+          const resultEl = document.getElementById('dpsResult');
+          const labelEl = document.getElementById('dpsFormulaLabel');
+
+          const suffixes = [
+            ['', '1'], ['M', 'Million'], ['B', 'Billion'], ['T', 'Trillion'],
+            ['Qa', 'Quadrillion'], ['Qi', 'Quintillion'], ['Sx', 'Sextillion'],
+            ['Sp', 'Septillion'], ['Oc', 'Octillion'], ['No', 'Nonillion'],
+            ['De', 'Decillion'], ['βA', '1000× Decillion'], ['βB', '1000× βA'],
+            ['βC', '1000× βB'], ['βD', '1000× βC'], ['βE', '1000× βD'],
+            ['βF', '1000× βE'], ['βG', '1000× βF'], ['βH', '1000× βG'],
+            ['βI', '1000× βH'], ['βJ', '1000× βI'], ['βK', '1000× βJ'],
+            ['βL', '1000× βK'], ['βM', '1000× βL'], ['βN', '1000× βM'],
+            ['βO', '1000× βN'], ['βP', '1000× βO'], ['βQ', '1000× βP'],
+            ['βR', '1000× βQ'], ['βS', '1000× βR'], ['βT', '1000× βS'],
+            ['βU', '1000× βT'], ['βV', '1000× βU'], ['βW', '1000× βV'],
+            ['βX', '1000× βW'], ['βY', '1000× βX'], ['βZ', '1000× βY']
+          ];
+
+          function suffixMultiplier(index) {
+            if (index === 0) return 1;
+            return Math.pow(1000, index + 1); // M = 1000^2, B = 1000^3, etc.
+          }
+
+          function populateSuffixes(selectEl) {
+            suffixes.forEach((s, i) => {
+              const opt = document.createElement('option');
+              opt.value = i;
+              opt.textContent = s[0] ? s[0] : '—';
+              selectEl.appendChild(opt);
+            });
+          }
+
+          populateSuffixes(powerSuffixEl);
+          populateSuffixes(multiSuffixEl);
+
+          function formatWithSuffix(num) {
+            if (num === 0) return '0';
+            const sign = num < 0 ? '-' : '';
+            num = Math.abs(num);
+            if (num < 1000) return sign + num.toLocaleString(undefined, { maximumFractionDigits: 2 });
+            let tier = Math.floor(Math.log10(num) / 3) - 1;
+            tier = Math.max(0, Math.min(tier, suffixes.length - 1));
+            const scaled = num / suffixMultiplier(tier);
+            const suffixLabel = suffixes[tier][0];
+            return sign + scaled.toLocaleString(undefined, { maximumFractionDigits: 2 }) + (suffixLabel ? ' ' + suffixLabel : '');
+          }
+
+          function recalc() {
+            const power = (parseFloat(powerEl.value) || 0) * suffixMultiplier(parseInt(powerSuffixEl.value));
+            const multi = (parseFloat(multiEl.value) || 0) * suffixMultiplier(parseInt(multiSuffixEl.value));
+            const factor = fastClickEl.checked ? 3.66 : 2.66;
+            labelEl.textContent = factor.toFixed(2);
+            const dps = factor * power * multi;
+            resultEl.textContent = formatWithSuffix(dps);
+          }
+
+          [powerEl, multiEl, powerSuffixEl, multiSuffixEl, fastClickEl].forEach(el => el.addEventListener('input', recalc));
+          recalc();
+        })();
+      </script>
+    </section>
+
+    <!-- GAMEPASS TIER LIST -->
+    <section class="page" id="page-gamepass-tier" data-cat="store">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Store</div>
+        <h1>Gamepass Tier List</h1>
+        <p class="page-lede">Ranked by how much grind-time or account-wide power each pass actually saves, not just novelty.</p>
+      </div>
+
+      <div class="tier-row tier-S">
+        <div class="tier-badge">S</div>
+        <div class="tier-items">
+          <span class="chip">1. Remote Star</span>
+          <span class="chip">2. +1 Sword Equip</span>
+          <span class="chip">3. 2x Power</span>
+          <span class="chip">4. More Drops (+5)</span>
+          <span class="chip">5. Fast Click</span>
+        </div>
+      </div>
+      <div class="tier-row tier-A">
+        <div class="tier-badge">A</div>
+        <div class="tier-items">
+          <span class="chip">6. VIP<span class="chip-note">see note below</span></span>
+          <span class="chip">7. Bleach BP</span>
+          <span class="chip">8. Summer BP</span>
+          <span class="chip">9. Clover BP</span>
+          <span class="chip">10. Castle BP</span>
+          <span class="chip">11. 2x Damage</span>
+        </div>
+      </div>
+      <div class="tier-row tier-B">
+        <div class="tier-badge">B</div>
+        <div class="tier-items">
+          <span class="chip">12. +2 Pet Equip</span>
+          <span class="chip">13. Fast Hatch</span>
+          <span class="chip">14. Fast Gacha</span>
+          <span class="chip">15. Multi Open</span>
+          <span class="chip">16. +1 Shadow Equip</span>
+          <span class="chip">17. 2x Yen</span>
+        </div>
+      </div>
+      <div class="tier-row tier-C">
+        <div class="tier-badge">C</div>
+        <div class="tier-items">
+          <span class="chip">18. +1 Gacha Open</span>
+          <span class="chip">19. Luck</span>
+          <span class="chip">20. Ultra Luck</span>
+          <span class="chip">21. Super Luck</span>
+          <span class="chip">22. Big Storage</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- GAMEPASS STATS -->
+    <section class="page" id="page-gamepass-stats" data-cat="store">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Store</div>
+        <h1>Gamepass Stats</h1>
+        <p class="page-lede">Effect, and both purchase paths where available. Prices change with promos — treat these as a starting point.</p>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Gamepass</th><th>Effect</th></tr></thead>
+          <tbody>
+            <tr><td>Remote Star</td><td>Hatch stars from anywhere — best value late-game once you're earning more Yen</td></tr>
+            <tr><td>+1 Sword Equip</td><td>Equip 2 swords at once</td></tr>
+            <tr><td>2x Power</td><td>Doubles Power gain</td></tr>
+            <tr><td>More Drops (+5)</td><td>+5 extra tokens per drop</td></tr>
+            <tr><td>Fast Click</td><td>Increases click speed by 37.5%</td></tr>
+            <tr><td>VIP</td><td>+25% Power and Damage, −30% gacha cost, −20% star cost</td></tr>
+            <tr><td>2x Damage</td><td>Doubles damage</td></tr>
+            <tr><td>+2 Pet Equip</td><td>Equip 2 more pets</td></tr>
+            <tr><td>Fast Hatch</td><td>2x hatch speed</td></tr>
+            <tr><td>Fast Gacha</td><td>Roll gacha 75% faster</td></tr>
+            <tr><td>Multi Open</td><td>+2 star openings at once</td></tr>
+            <tr><td>+1 Shadow Equip</td><td>Equip 1 more shadow</td></tr>
+            <tr><td>2x Yen</td><td>Doubles Yen earned</td></tr>
+            <tr><td>+1 Gacha Open</td><td>+1 more gacha per roll</td></tr>
+            <tr><td>Luck</td><td>+1 Luck</td></tr>
+            <tr><td>Ultra Luck</td><td>+2 Luck</td></tr>
+            <tr><td>Super Luck</td><td>+4 Luck</td></tr>
+            <tr><td>Big Storage</td><td>+500 storage capacity</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ACCESSORIES -->
+    <section class="page" id="page-accessories" data-cat="gear">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Gear</div>
+        <h1>Accessories</h1>
+        <p class="page-lede">Four slots — <span class="slot-tag">Head</span> <span class="slot-tag">Torso</span> <span class="slot-tag">Back</span> <span class="slot-tag">Shoulder</span> — one item equipped per slot at once, all bonuses stack.</p>
+      </div>
+
+      <h2>Head</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Accessory</th><th>Stats</th><th>Obtained From</th></tr></thead>
+          <tbody>
+            <tr><td>Akatsuki Hat</td><td class="mono">Power: 1.50x<br>Damage: 1.25x</td><td>Itachi World Boss (W1)</td></tr>
+            <tr><td>Alucard Hat</td><td class="mono">Power: 1.25x<br>Damage: 1.25x<br>Yen: 1.25x</td><td>Alucard Bundle (Shop)</td></tr>
+            <tr><td>Iron Shield</td><td class="mono">Power: 1.75x<br>Yen: 1.50x</td><td>Beleon World Boss (W5)</td></tr>
+            <tr><td>Douma Hat</td><td class="mono">Power: 2.75x<br>Damage: 2.50x<br>Yen: 2x</td><td>Castle Battlepass — Free Tier Lvl. 15</td></tr>
+            <tr><td>Mozan Hat</td><td class="mono">Power: 2.50x<br>Damage: 2.75x<br>Yen: 2.25x</td><td>Infinity Castle</td></tr>
+            <tr><td>Zero Two Horns</td><td class="mono">Power: 3.75x<br>Damage: 3x<br>Yen: 3.25x</td><td>Shop (Accessory Bundle) — Limited</td></tr>
+            <tr><td>Yuno</td><td class="mono">Power: 3.25x<br>Damage: 3.75x<br>Yen: 3x</td><td>Battlepass — Free Tier, World 7</td></tr>
+            <tr><td>Snorkle</td><td class="mono">Power: 3.75x<br>Damage: 3.50x<br>Yen: 4.25x</td><td>Summer Battlepass — Free Tier Lvl. 25</td></tr>
+            <tr><td>Summer Cone</td><td class="mono">Power: 4x<br>Damage: 4.25x<br>Yen: 3.75x</td><td>Ball System — 150 pity, spawns every 20 min, despawns after 30 min uncollected</td></tr>
+            <tr><td>Tiny Crown</td><td class="mono">Power: 5x<br>Drop: +0.2<br>Yen: 4.25x</td><td>Soul Raid Battlepass (W10)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Torso</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Accessory</th><th>Stats</th><th>Obtained From</th></tr></thead>
+          <tbody>
+            <tr><td>Fusion Vest</td><td class="mono">Power: 1.50x<br>Yen: 1.25x</td><td>Broly World Boss (W2)</td></tr>
+            <tr><td>Tusk Neck Skull</td><td class="mono">Power: 2x<br>Damage: 1.75x</td><td>Gates (W5)</td></tr>
+            <tr><td>Yoshino</td><td class="mono">Power: 2.50x<br>Damage: 1.50x<br>Yen: 2x</td><td>Arena Lobby Market</td></tr>
+            <tr><td>Douma</td><td class="mono">Power: 1.50x<br>Damage: 2x<br>Yen: 2.50x</td><td>Kokoshebo World Boss</td></tr>
+            <tr><td>Asta Armor</td><td class="mono">Power: 3.50x<br>Damage: 2.50x<br>Yen: 3x</td><td>Merchant, World 7 (125k Coins) — Secret</td></tr>
+            <tr><td>Floatie</td><td class="mono">Power: 3.25x<br>Damage: 3.75x<br>Yen: 3.50x</td><td>Quinella World Boss (W8)</td></tr>
+            <tr><td>Fire Force Clothe</td><td class="mono">Power: 4.25x<br>Damage: 3.50x<br>Yen: 3.75x</td><td>Fire Force Dungeon (W9)</td></tr>
+            <tr><td>Aiz Haori</td><td class="mono">Damage: 4x<br>Drop: +0.2<br>Yen: 4.25x</td><td>Hueco Mundo World Boss (W10)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Back</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Accessory</th><th>Stats</th><th>Obtained From</th></tr></thead>
+          <tbody>
+            <tr><td>Sand Bag</td><td class="mono">Power: 1.25x<br>Yen: 1.50x</td><td>Ninja Leaf Raid</td></tr>
+            <tr><td>Igros Coat</td><td class="mono">Power: 2x<br>Damage: 1.75x</td><td>Igros Bundle (Shop)</td></tr>
+            <tr><td>Levi Cloak</td><td class="mono">Power: 1.50x<br>Damage: 1.25x</td><td>Armored Titan World Boss (W4)</td></tr>
+            <tr><td>Thunder Drums</td><td class="mono">Power: 1.25x<br>Damage: 1.50x</td><td>White Beard World Boss (W3)</td></tr>
+            <tr><td>Nezuko Crate</td><td class="mono">Power: 3x<br>Damage: 2.50x<br>Yen: 2.75x</td><td>Castle Battlepass — Premium Tier Lvl. 15</td></tr>
+            <tr><td>Asta Wings</td><td class="mono">Power: 3.75x<br>Damage: 3.25x<br>Yen: 3x</td><td>Battlepass, World 7, Lvl. 25 — Secret</td></tr>
+            <tr><td>Kings Mage Cape</td><td class="mono">Power: 3x<br>Damage: 3.25x<br>Yen: 3.75x</td><td>World Boss, World 7</td></tr>
+            <tr><td>SurfBoard</td><td class="mono">Power: 4.25x<br>Damage: 3.75x<br>Yen: 3.50x</td><td>Accessory Bundle 2, Summer — Limited</td></tr>
+            <tr><td>Fire Jacket</td><td class="mono">Power: 4.50x<br>Damage: 4.25x<br>Yen: 4x</td><td>Fire Force World Boss (W9)</td></tr>
+            <tr><td>Guildmaster Staff</td><td class="mono">Power: 5.25x<br>Damage: 4x<br>Drop: +0.2</td><td>Soul Raid Battlepass (W10)</td></tr>
+            <tr><td>Tashigi</td><td class="mono">Power: 4.25x<br>Damage: 3.50x<br>Yen: 3.25x</td><td>Summer Battlepass — Premium Tier Lvl. 25</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Shoulder</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Accessory</th><th>Stats</th><th>Obtained From</th></tr></thead>
+          <tbody>
+            <tr><td>Crow</td><td class="mono">Power: 2x<br>Damage: 2.50x<br>Yen: 1.50x</td><td>Crow System (W6) — 150 pity, spawns every 20 min, despawns after 30 min uncollected</td></tr>
+            <tr><td>Snail</td><td class="mono">Power: 2.50x<br>Damage: 1.50x<br>Yen: 2x</td><td>Summer Merchant — 1M Summer Coin (W8)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- MOUNTS -->
+    <section class="page" id="page-mounts" data-cat="gear">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Gear</div>
+        <h1>Mounts</h1>
+        <p class="page-lede">Mounts aren't cosmetic-only — each equipped mount buffs your stats. Summon with <b>M</b> (PC) or the Mount button (mobile); switch from Items → Mounts tab.</p>
+      </div>
+
+      <div class="card-grid">
+        <div class="card">
+          <div class="card-title">Rat <span style="color:var(--slate);font-size:11px">(Infinity Castle)</span></div>
+          <div class="card-body">1.25x Power · Speed 131 <span style="color:var(--slate)">(+31%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Infinity Castle</b></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Rat <span style="color:var(--slate);font-size:11px">(Defense Mode)</span></div>
+          <div class="card-body">+2.5 Luck · Speed 131 <span style="color:var(--slate)">(+31%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Defense Mode</b></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Rat <span style="color:var(--slate);font-size:11px">(Timeless Raid)</span></div>
+          <div class="card-body">1.25x Damage · Speed 131 <span style="color:var(--slate)">(+31%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Timeless Raid</b></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Hamburger</div>
+          <div class="card-body">1.35x Damage · 1.25x Power · +2 Luck · Speed 174 <span style="color:var(--slate)">(+74%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Beach Defense</b></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Coconut</div>
+          <div class="card-body">1.25x Damage · 1.35x Power · +4 Luck · Speed 169 <span style="color:var(--slate)">(+69%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Summer Mount Bundle</b></div>
+        </div>
+        <div class="card">
+          <div class="card-title">Wolf <span style="color:var(--gold);font-size:11px">★ Strongest</span></div>
+          <div class="card-body">1.5x Damage · 1.35x Power · +4 Luck · Speed 209 <span style="color:var(--slate)">(+109%)</span></div>
+          <div class="card-footer"><span>Obtain:</span><b>Ultimate Bundle</b></div>
+        </div>
+      </div>
+      <p class="note">Wolf is the strongest all-around mount currently in the game (highest Damage, Power, and Walk Speed) but comes from the paid Ultimate Bundle. Hamburger is the best F2P-obtainable option.</p>
+    </section>
+
+    <!-- SWORDS -->
+    <section class="page" id="page-swords" data-cat="gear">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Gear</div>
+        <h1>Swords</h1>
+        <p class="page-lede">Sword multiplier by star tier. Fusing swords upward requires copies of the tier below.</p>
+      </div>
+
+      <h2>🥉 Star 0</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Sword</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>Wind Nichirin</td><td class="mono">x2.0</td></tr>
+            <tr><td>Ice Sword</td><td class="mono">x2.5</td></tr>
+            <tr><td>Excalibur</td><td class="mono">x3.0</td></tr>
+            <tr><td>Blue Rose</td><td class="mono">x3.6</td></tr>
+            <tr><td>Elucidator</td><td class="mono">x4.7</td></tr>
+            <tr><td>Repulser</td><td class="mono">x6.8</td></tr>
+            <tr><td>Fragrant</td><td class="mono">x9.7</td></tr>
+            <tr><td>Admin Sword</td><td class="mono">x14.4</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>⭐ Star 1</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Sword</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>Wind Nichirin</td><td class="mono">x2.5</td></tr>
+            <tr><td>Ice Sword</td><td class="mono">x3.1</td></tr>
+            <tr><td>Excalibur</td><td class="mono">x3.7</td></tr>
+            <tr><td>Blue Rose</td><td class="mono">x4.5</td></tr>
+            <tr><td>Elucidator</td><td class="mono">x5.9</td></tr>
+            <tr><td>Repulser</td><td class="mono">x8.4</td></tr>
+            <tr><td>Fragrant</td><td class="mono">x12.1</td></tr>
+            <tr><td>Admin Sword</td><td class="mono">x18</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>⭐⭐ Star 2</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Sword</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>Wind Nichirin</td><td class="mono">x3.0</td></tr>
+            <tr><td>Ice Sword</td><td class="mono">x3.7</td></tr>
+            <tr><td>Excalibur</td><td class="mono">x4.4</td></tr>
+            <tr><td>Blue Rose</td><td class="mono">x5.4</td></tr>
+            <tr><td>Elucidator</td><td class="mono">x7.1</td></tr>
+            <tr><td>Repulser</td><td class="mono">x10.1</td></tr>
+            <tr><td>Fragrant</td><td class="mono">x14.5</td></tr>
+            <tr><td>Admin Sword</td><td class="mono">x21.6</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>⭐⭐⭐ Star 3</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Sword</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>Wind Nichirin</td><td class="mono">x3.5</td></tr>
+            <tr><td>Ice Sword</td><td class="mono">x4.3</td></tr>
+            <tr><td>Excalibur</td><td class="mono">x5.2</td></tr>
+            <tr><td>Blue Rose</td><td class="mono">x6.3</td></tr>
+            <tr><td>Elucidator</td><td class="mono">x8.2</td></tr>
+            <tr><td>Repulser</td><td class="mono">x11.8</td></tr>
+            <tr><td>Fragrant</td><td class="mono">x16.9</td></tr>
+            <tr><td>Admin Sword</td><td class="mono">x25.2</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Fusion Requirements</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Result</th><th>Sword Amount Needed</th><th>Sword Star Requirement</th></tr></thead>
+          <tbody>
+            <tr><td>1 Star Sword</td><td class="mono">5</td><td>Base (Star 0)</td></tr>
+            <tr><td>2 Star Sword</td><td class="mono">4</td><td>1 Star</td></tr>
+            <tr><td>3 Star Sword</td><td class="mono">3</td><td>2 Star</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Each fusion consumes multiple copies of the sword one tier below to produce a single copy at the next star tier.</p>
+    </section>
+
+    <!-- PETS -->
+    <section class="page" id="page-avatars" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Avatars</h1>
+        <p class="page-lede">Avatar multiplier by world/zone. Raid Boss avatars are Secret-rarity drops obtained from their respective raids at low odds.</p>
+      </div>
+
+      <h2>Ninja Village</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Sabuze</td><td class="mono">x1.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Tobe</td><td class="mono">x2</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Kesame</td><td class="mono">x3</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Pano</td><td class="mono">x4.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Madera</td><td class="mono">x6.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Kagoye</td><td class="mono">x13</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Hashiromo</td><td class="mono">x32</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Namek City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Gurdo</td><td class="mono">x6.2</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Borter</td><td class="mono">x7</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Giyun</td><td class="mono">x8.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Rezome</td><td class="mono">x10.8</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Céu</td><td class="mono">x13.8</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Boo</td><td class="mono">x23.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Brolew</td><td class="mono">x58.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Wano Island</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Marine Soldier</td><td class="mono">x13.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Enel</td><td class="mono">x14.8</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Kizary</td><td class="mono">x17.2</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Aokiri</td><td class="mono">x21</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Akanu</td><td class="mono">x26</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Caido</td><td class="mono">x42.2</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>White Beard</td><td class="mono">x105.7</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Titan Wall</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Jaw Titan</td><td class="mono">x25.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Female Titan</td><td class="mono">x31.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Zeke Titan</td><td class="mono">x37.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Attack Titan</td><td class="mono">x45.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Hammer Titan</td><td class="mono">x55.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Colossal Titan</td><td class="mono">x88</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Armored Titan</td><td class="mono">x220</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Solo City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Gogun</td><td class="mono">x57.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Keng</td><td class="mono">x72.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Gotu</td><td class="mono">x95</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Antaro</td><td class="mono">x125</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Tusko</td><td class="mono">x170</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Baruke</td><td class="mono">x275</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Beleon</td><td class="mono">x687.5</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Slayer Village</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Susamaro</td><td class="mono">x150</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Enmo</td><td class="mono">x200</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Gyataru</td><td class="mono">x285</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Dake</td><td class="mono">x400</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Hantego</td><td class="mono">x575</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Dhoma</td><td class="mono">x1K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Kokeshebo</td><td class="mono">x2.2K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Clover Island</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Vanice</td><td class="mono">x600</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Nolel</td><td class="mono">x750</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Zagrod</td><td class="mono">x950</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Liebe</td><td class="mono">x1.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Zenen</td><td class="mono">x1.6K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Natchet</td><td class="mono">x2.6K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Lucies</td><td class="mono">x5.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Summer Art Online</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Miller</td><td class="mono">x1.8K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Eiji</td><td class="mono">x2.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Yuna</td><td class="mono">x2.7K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Death Gun</td><td class="mono">x3.4K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>PoH</td><td class="mono">x4.4K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>HeartCliff</td><td class="mono">x7.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Quinella</td><td class="mono">x13K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Fire City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Infernal</td><td class="mono">x4.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Inca</td><td class="mono">x5.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Hibana</td><td class="mono">x7K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Charon</td><td class="mono">x9K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Haumea</td><td class="mono">x12.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Joker</td><td class="mono">x17K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Sho</td><td class="mono">x26.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Hueco World</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Grimjow</td><td class="mono">x13K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Neli</td><td class="mono">x14.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Hallibel</td><td class="mono">x17K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Ginn</td><td class="mono">x20.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Coyotte</td><td class="mono">x25.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Joker</td><td class="mono">x33.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Aiz</td><td class="mono">x55K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Raid Bosses</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Avatar</th><th>Multiplier</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Kurumi Tokisaki</td><td class="mono">x1.1K</td><td>Timeless Raid (low odds)</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Muzon</td><td class="mono">x3K</td><td>Infinity Castle Raid (low odds)</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Demon Asta</td><td class="mono">x6.2K</td><td>Clover Raid (low odds)</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Yuhabach</td><td class="mono">x72K</td><td>Soul Raid (low odds)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="page" id="page-pets" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Pets</h1>
+        <p class="page-lede">Pet multiplier by world/zone. Shiny versions give 1.5x the multiplier of their normal counterpart. Scaling and Limited pets are listed separately per source since they don't follow the standard rarity ladder.</p>
+      </div>
+
+      <h2>Ninja Village</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Rokiee Le</td><td class="mono">x1.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Naroto</td><td class="mono">x3</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Sazuko</td><td class="mono">x5.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Kakasher</td><td class="mono">x9.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Jeraya</td><td class="mono">x15</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Minoto</td><td class="mono">x31</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Madera</td><td class="mono">x77.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Hashiromo</td><td class="mono">x194</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Baryon Mode</td><td class="mono">x582</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Namek City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Mr Sotan</td><td class="mono">x11</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Kureren</td><td class="mono">x13.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Picole</td><td class="mono">x18</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Trenks</td><td class="mono">x25</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Vezeta</td><td class="mono">x35</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Koku</td><td class="mono">x70</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Broly</td><td class="mono">x175</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Gogueta</td><td class="mono">x437.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Gogueta SSJ4</td><td class="mono">x1.3K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Wano Island</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Namy</td><td class="mono">x30.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Luffe</td><td class="mono">x37.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Zorro</td><td class="mono">x47</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Sanje</td><td class="mono">x59.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Rosquinha</td><td class="mono">x76</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Mihowk</td><td class="mono">x152</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Morshal D Teach</td><td class="mono">x380</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Gol D Rogger</td><td class="mono">x950</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Luffe Gear 5</td><td class="mono">x2.9K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Titan Wall</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Cone Springer</td><td class="mono">x71.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Erin Yeger</td><td class="mono">x88</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Armen</td><td class="mono">x108.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Batata</td><td class="mono">x133.5</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Mikesa</td><td class="mono">x164</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Erwon Smith</td><td class="mono">x328</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Lovi Ackerman</td><td class="mono">x820</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Levi</td><td class="mono">x2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Adult Erin</td><td class="mono">x6.2K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Solo City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Young Sung</td><td class="mono">x175</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Esil</td><td class="mono">x215</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Hae</td><td class="mono">x265</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Baek</td><td class="mono">x325</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Choi</td><td class="mono">x400</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Sung TimeSkip</td><td class="mono">x800</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Sung Ice</td><td class="mono">x2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Igros</td><td class="mono">x5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Bezu</td><td class="mono">x15K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Slayer Village</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Nezoka</td><td class="mono">x450</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Tanjiro</td><td class="mono">x560</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Zenitsu</td><td class="mono">x700</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Inosuke</td><td class="mono">x875</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Iguro</td><td class="mono">x1.1K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Uzui</td><td class="mono">x2.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Rengoku</td><td class="mono">x5.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Gyomei</td><td class="mono">x14K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Yoruichi</td><td class="mono">x32.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Clover Island</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Magne</td><td class="mono">x1.4K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Finrel</td><td class="mono">x1.6K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Noella</td><td class="mono">x2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Zore</td><td class="mono">x2.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Mereoleona</td><td class="mono">x3.1K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Yame</td><td class="mono">x5.6K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Yunu</td><td class="mono">x10.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Julies</td><td class="mono">x21.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Asta</td><td class="mono">x47.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Summer Art Online</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Klein</td><td class="mono">x3.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Leeta</td><td class="mono">x4K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Sinon</td><td class="mono">x5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Yuuki</td><td class="mono">x6.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Eugeo</td><td class="mono">x7.7K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Asuna</td><td class="mono">x12K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Leenn</td><td class="mono">x20.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Kirito</td><td class="mono">x34.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Alice</td><td class="mono">x60K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Fire City</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Iris</td><td class="mono">x8.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Tamaki</td><td class="mono">x9.3K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Maki</td><td class="mono">x10.8K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Arthur</td><td class="mono">x12.8K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Shinra</td><td class="mono">x16K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Leonard</td><td class="mono">x21K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Ogun</td><td class="mono">x31K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Benimaru</td><td class="mono">x43.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Shinrabasho</td><td class="mono">x77K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Hueco World</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Common">Common</td><td>Orihimi</td><td class="mono">x17.2K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Uncommon">Uncommon</td><td>Rukyo</td><td class="mono">x18.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Rare">Rare</td><td>Renjyu</td><td class="mono">x21K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Epic">Epic</td><td>Byakuyo</td><td class="mono">x24.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Legendary">Legendary</td><td>Toshiroo</td><td class="mono">x29.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Mythical">Mythical</td><td>Kenpachy</td><td class="mono">x36.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Crafted">Crafted</td><td>Shinjo</td><td class="mono">x48K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Secret">Secret</td><td>Yamamotto</td><td class="mono">x65.5K</td></tr>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Ichigoo Vasto</td><td class="mono">x112.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Timeless Raid</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Rarity</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td class="rarity-cell" data-rarity="Divine">Divine</td><td>Kurumi</td><td class="mono">x27.5K</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Time Chamber <span style="color:var(--slate);font-size:12px">(Unobtainable)</span></h2>
+      <p class="note">Divine Atomic (135% stronger than your best pet) is listed in the Scaling Pets table below.</p>
+
+      <h2>Exclusive</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Type</th><th>Pet</th><th>Multiplier</th></tr></thead>
+          <tbody>
+            <tr><td>Exclusive</td><td>Alucard</td><td class="mono">x115</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Scaling Pets</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Pet</th><th>Multiplier</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>Guita Onesie</td><td class="mono">110% of your best pet</td><td>Battlepass — Free Tier</td></tr>
+            <tr><td>Rem</td><td class="mono">120% of your best pet</td><td>Battlepass — Premium Tier</td></tr>
+            <tr><td>Noella MAX</td><td class="mono">115% of your best pet</td><td>Clover Battlepass — Free Tier Lvl. 50</td></tr>
+            <tr><td>Asta MAX</td><td class="mono">125% of your best pet</td><td>Clover Battlepass — Premium Tier Lvl. 50</td></tr>
+            <tr><td>Remi (SUMMER 2026)</td><td class="mono">120% of your best pet</td><td>Summer Battlepass — Free Tier Lvl. 50</td></tr>
+            <tr><td>Akoa (SUMMER 2026)</td><td class="mono">130% of your best pet</td><td>Summer Battlepass — Premium Tier Lvl. 50</td></tr>
+            <tr><td>Asto</td><td class="mono">125% stronger than your best pet</td><td>W10 Battlepass</td></tr>
+            <tr><td>Ainz</td><td class="mono">135% stronger than your best pet</td><td>W10 Battlepass</td></tr>
+            <tr><td>Atomic</td><td class="mono">135% stronger than your best pet</td><td>Time Chamber (Unobtainable)</td></tr>
+            <tr><td>Miku</td><td class="mono">140% of your best pet</td><td>Shop — Limited (Unobtainable)</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Limited Pets</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Pet</th><th>Multiplier</th><th>Source</th></tr></thead>
+          <tbody>
+            <tr><td>Rias</td><td class="mono">x65K</td><td>Free by reaching Level 100</td></tr>
+            <tr><td>Zero Two</td><td class="mono">x52.5K</td><td>Limited Bundle (Unobtainable)</td></tr>
+            <tr><td>Esdeath</td><td class="mono">x125K</td><td>Limited Bundle</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="note">Shiny Pets give 1.5x the multiplier of their normal version. Secret and Divine pets are obtained from stars with an unknown drop chance.</p>
+    </section>
+
+    <!-- PET PASSIVES & ACCESSORIES -->
+    <section class="page" id="page-pet-passives" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Pet Passives &amp; Accessories</h1>
+        <p class="page-lede">Equippable pet accessories and the passive tiers pets can roll, both stacking as extra Power on top of a pet's base multiplier.</p>
+      </div>
+
+      <h2>Accessories</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Accessory</th><th>Effect</th><th>Source</th><th>Restriction</th></tr></thead>
+          <tbody>
+            <tr><td>Kirito Art</td><td class="mono">+10% Power to Kirito</td><td>Beach Defense</td><td>Kirito Secret Pet W8 only</td></tr>
+            <tr><td>Alice Art</td><td class="mono">+10% Power to Alice</td><td>Beach Defense</td><td>Alice Divine Pet W8 only</td></tr>
+            <tr><td>Golden Ring</td><td class="mono">+15% Power to any pet</td><td>Ultimate Bundle</td><td>Any pet except Scaling Pets</td></tr>
+            <tr><td>Yamo Staff</td><td class="mono">+10% Power to Yamamotto</td><td>Soul Raid</td><td>Yamamotto Secret Pet W10 only</td></tr>
+            <tr><td>Lord Mask</td><td class="mono">+10% Power to Ichigoo Vasto</td><td>Soul Raid</td><td>Ichigoo Vasto Divine Pet W10 only</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Pet Accessory drop chances are unknown — please avoid asking about exact odds.</p>
+
+      <h2>Passives</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Passive</th><th>Bonus</th></tr></thead>
+          <tbody>
+            <tr><td>Pack Instinct</td><td class="mono">+2.5% Power</td></tr>
+            <tr><td>Predator Focus</td><td class="mono">+5% Power</td></tr>
+            <tr><td>Feral Rage</td><td class="mono">+10% Power</td></tr>
+            <tr><td>Alpha Fury</td><td class="mono">+15% Power</td></tr>
+            <tr><td>Primal Awakening</td><td class="mono">+20% Power</td></tr>
+            <tr><td>Ancient Bloodlust</td><td class="mono">+25% Power</td></tr>
+            <tr><td>Mythic Ferocity</td><td class="mono">+50% Power</td></tr>
+            <tr><td>Divine Predator</td><td class="mono">+100% Power</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SHADOWS -->
+    <section class="page" id="page-shadows" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Shadows</h1>
+        <p class="page-lede">Shadows are obtained from gates in Solo City. Arising a gate mob has 3 attempts, and higher-rank gates give better odds at a higher-rank shadow.</p>
+      </div>
+
+      <h2>Gate Spawn Time</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Spawn Minute</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">xx:00</td></tr>
+            <tr><td class="mono">xx:10</td></tr>
+            <tr><td class="mono">xx:20</td></tr>
+            <tr><td class="mono">xx:30</td></tr>
+            <tr><td class="mono">xx:40</td></tr>
+            <tr><td class="mono">xx:50</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Gates spawn every 10 minutes. Skins give the shadow extra buffs on top of its rank multiplier.</p>
+
+      <h2>Stats</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Skin</th><th>B Rank</th><th>A Rank</th><th>S Rank</th><th>SS+ Rank</th></tr></thead>
+          <tbody>
+            <tr><td>Iron</td><td class="mono">75%</td><td class="mono">90%</td><td class="mono">120%</td><td class="mono">150%</td></tr>
+            <tr><td>Igris</td><td class="mono">90%</td><td class="mono">108%</td><td class="mono">144%</td><td class="mono">180%</td></tr>
+            <tr><td>Tusk</td><td class="mono">105%</td><td class="mono">126%</td><td class="mono">168%</td><td class="mono">210%</td></tr>
+            <tr><td>Beru</td><td class="mono">125%</td><td class="mono">150%</td><td class="mono">200%</td><td class="mono">250%</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">All shadow ranks can drop from any gate. Iron, Igris, and Tusk skins can drop from any gate rank — Beru is locked to gate rank A.</p>
+    </section>
+
+    <!-- ZANPAKUTO -->
+    <section class="page" id="page-zanpakuto" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Zanpakuto</h1>
+      </div>
+
+      <h2>Part Obtainment</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Part</th><th>Obtained From</th></tr></thead>
+          <tbody>
+            <tr><td>Part 1</td><td>Any Raid (W0, W1, W6, W7, W10)</td></tr>
+            <tr><td>Part 2</td><td>Any Defense (W4 and W8)</td></tr>
+            <tr><td>Part 3</td><td>Any Trials or any Dungeon</td></tr>
+            <tr><td>Part 4</td><td>Any World Boss</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Odds of dropping parts are unknown — please avoid asking.</p>
+
+      <h2>Level Requirements</h2>
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Level</th><th>Power</th><th>Kills Required</th></tr></thead>
+          <tbody>
+            <tr><td>1</td><td class="mono">1.3x</td><td class="mono">400</td></tr>
+            <tr><td>2</td><td class="mono">1.6x</td><td class="mono">2,100</td></tr>
+            <tr><td>3</td><td class="mono">1.9x</td><td class="mono">5,400</td></tr>
+            <tr><td>4</td><td class="mono">2.2x</td><td class="mono">11,475</td></tr>
+            <tr><td>5</td><td class="mono">2.5x</td><td class="mono">22,275</td></tr>
+            <tr><td>6</td><td class="mono">2.8x</td><td class="mono">41,006</td></tr>
+            <tr><td>7</td><td class="mono">3.1x</td><td class="mono">72,900</td></tr>
+            <tr><td>8</td><td class="mono">3.4x</td><td class="mono">126,435</td></tr>
+            <tr><td>9</td><td class="mono">3.7x</td><td class="mono">215,282</td></tr>
+            <tr><td>10</td><td class="mono">4x</td><td class="mono">MAX</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TITLES -->
+    <section class="page" id="page-titles" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Titles</h1>
+        <p class="page-lede">Equippable name-tags shown under your username. Each title drops from a specific World Boss and carries a permanent stat bonus.</p>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Title</th><th>Bonus</th><th>Drops From</th><th>World</th></tr></thead>
+          <tbody>
+            <tr><td>Uchiha Prodigy</td><td class="mono">+1 Luck</td><td>Itache</td><td>World 1</td></tr>
+            <tr><td>The Berserker Saiyan</td><td class="mono">1.5x Yen</td><td>Broly</td><td>World 2</td></tr>
+            <tr><td>The Strongest Man In The World</td><td class="mono">1.5x Damage</td><td>White Beard</td><td>World 3</td></tr>
+            <tr><td>The Armored Titan</td><td class="mono">1.5x Power</td><td>Armored Titan</td><td>World 4</td></tr>
+            <tr><td>Grand Marshal Of The Shadow Army</td><td class="mono">+0.25x Drop</td><td>Beleon</td><td>World 5</td></tr>
+            <tr><td>Upper Moon One</td><td class="mono">+2.5 Luck</td><td>Kokoshebo</td><td>World 6</td></tr>
+            <tr><td>Host Of Astaroth</td><td class="mono">2x Yen</td><td>Lucies</td><td>World 7</td></tr>
+            <tr><td>The Administrator</td><td class="mono">2x Damage</td><td>Quinella</td><td>World 8</td></tr>
+            <tr><td>Third Pillar</td><td class="mono">2x Power</td><td>Sho</td><td>World 9</td></tr>
+            <tr><td>False God</td><td class="mono">+0.5x Drop</td><td>Aiz</td><td>World 10</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Bonuses climb steadily by world — early titles nudge one stat (+1 Luck), later ones are full multipliers (2x Damage, 2x Power) — so a title from a later world is generally worth re-farming for even if you already hold an earlier one in the same stat lane.</p>
+    </section>
+
+    <!-- SIDE QUESTS -->
+    <section class="page" id="page-sidequests" data-cat="progression">
+      <div class="page-header">
+        <div class="eyebrow"><svg class="eyebrow-icon"><use href="#i-hex"/></svg>Progression</div>
+        <h1>Side Quests</h1>
+        <p class="page-lede">One side quest per world, each tied to killing a set number of that world's boss enemy for a Power/Damage buff plus Potions II.</p>
+      </div>
+
+      <div class="data-table-wrap">
+        <table>
+          <thead><tr><th>Quest</th><th>World</th><th>Task</th><th>Reward</th></tr></thead>
+          <tbody>
+            <tr><td>Ninja Quest</td><td>World 1</td><td>Kill 2500 Itache</td><td>+50% Power and 18 Potion II</td></tr>
+            <tr><td>Namek Quest</td><td>World 2</td><td>Kill 2500 Broly</td><td>+50% Power and 18 Potion II</td></tr>
+            <tr><td>Wano Quest</td><td>World 3</td><td>Kill 2500 White Beard</td><td>+50% Power and 18 Potion II</td></tr>
+            <tr><td>Titan Quest</td><td>World 4</td><td>Kill 2500 Armored Titan</td><td>+50% Power and 18 Potion II</td></tr>
+            <tr><td>Solo Quest</td><td>World 5</td><td>Kill 2500 Beleon</td><td>+75% Power, +25% Damage and 18 Potion II</td></tr>
+            <tr><td>Slayer Quest</td><td>World 6</td><td>Kill 3500 Kokeshebo</td><td>+50% Power, +25% Damage and 18 Potions II</td></tr>
+            <tr><td>Clover Quest</td><td>World 7</td><td>Kill 2500 Lucies</td><td>+75% Power, +25% Damage and 18 Potion II</td></tr>
+            <tr><td>Summer Quest</td><td>World 8</td><td>Kill 2500 Quinella</td><td>+75% Power, +25% Damage and 18 Potions II</td></tr>
+            <tr><td>Fire City Quest</td><td>World 9</td><td>Kill 2500 Sho</td><td>+75% Power, +25% Damage and 18 Potions II</td></tr>
+            <tr><td>Hueco Mundo Quest</td><td>World 10</td><td>Kill 2500 Aiz</td><td>+75% Power, +25% Damage and 18 Potions II</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="note">Reward tier jumps at World 5 (Solo Quest) — from +50% Power only, to +75% Power / +25% Damage. Slayer Quest (World 6) is the outlier requiring 3500 kills instead of 2500.</p>
+    </section>
+
+  </main>
+</div>
+
+<script>
+  function showPage(id) {
+    document.querySelectorAll('section.page').forEach(s => s.classList.remove('active'));
+    document.getElementById('page-' + id).classList.add('active');
+    document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+    const link = document.querySelector('.nav-link[data-page="' + id + '"]');
+    if (link) link.classList.add('active');
+    else document.querySelector('.nav-link').classList.add('active'); // home
+    window.scrollTo(0,0);
+    document.getElementById('sidebar').classList.remove('open');
+    clearNavSearch();
+  }
+
+  document.getElementById('menuToggle').addEventListener('click', () => {
+    document.getElementById('sidebar').classList.toggle('open');
+  });
+
+  const navKeywords = {
+    'home': ['overview', 'welcome', 'start'],
+    'codes': ['redeem', 'promo', 'copy', 'freebies'],
+    'gamepass-tier': ['gamepasses', 'best gamepass', 'ranking', 'worth it'],
+    'gamepass-stats': ['gamepasses', 'price', 'effect', 'perks'],
+    'mechanics': ['dps', 'damage', 'formula', 'calculator', 'click', 'numbers', 'suffix'],
+    'accessories': ['gear', 'equipment', 'helmet', 'torso', 'back', 'shoulder'],
+    'mounts': ['ride', 'speed', 'walk'],
+    'swords': ['weapon', 'blade', 'fusion', 'star'],
+    'avatars': ['skin', 'character', 'world boss'],
+    'pets': ['companion', 'egg', 'hatch', 'rarity', 'multiplier', 'scaling', 'limited'],
+    'pet-passives': ['passive', 'accessory', 'pet gear', 'kirito', 'alice', 'golden ring'],
+    'shadows': ['gate', 'arise', 'iron', 'igris', 'tusk', 'beru', 'solo city'],
+    'zanpakuto': ['sword spirit', 'craft', 'parts', 'kills'],
+    'titles': ['name tag', 'bonus', 'world boss'],
+    'sidequests': ['quest', 'kill quest', 'daily']
+  };
+
+  function filterNav() {
+    const input = document.getElementById('navSearch');
+    const q = input.value.toLowerCase().trim();
+    const clearBtn = document.getElementById('searchClear');
+    const emptyMsg = document.getElementById('searchEmpty');
+    const emptyTerm = document.getElementById('searchEmptyTerm');
+
+    clearBtn.classList.toggle('visible', q.length > 0);
+
+    let anyGroupVisible = false;
+    document.querySelectorAll('.nav-group').forEach(group => {
+      let anyVisible = false;
+      group.querySelectorAll('.nav-link').forEach(l => {
+        const text = l.textContent.toLowerCase();
+        const page = l.getAttribute('data-page');
+        const keywords = navKeywords[page] || [];
+        const match = !q || text.includes(q) || keywords.some(k => k.includes(q) || q.includes(k));
+        l.style.display = match ? 'flex' : 'none';
+        if (match) anyVisible = true;
+      });
+      group.style.display = anyVisible ? 'block' : 'none';
+      if (anyVisible) anyGroupVisible = true;
+    });
+
+    const showEmpty = q.length > 0 && !anyGroupVisible;
+    emptyMsg.classList.toggle('visible', showEmpty);
+    if (showEmpty) emptyTerm.textContent = input.value.trim();
+  }
+
+  function clearNavSearch() {
+    const input = document.getElementById('navSearch');
+    input.value = '';
+    filterNav();
+    input.focus();
+  }
+</script>
+
+</body>
+</html>
